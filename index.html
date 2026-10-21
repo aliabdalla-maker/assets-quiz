@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Building with Assets Quiz</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single 760px column on a faint blueprint grid — video first, then a locked question sheet that opens once the video is watched */
+:root{
+  --bg:#f4f7fb; --surface:#ffffff; --fg:#13213a; --muted:#566582; --line:#d5deeb; --grid:rgba(31,95,191,.06);
+  --accent:#1f5fbf; --on-accent:#ffffff; --accent-soft:#e3ecfa; --good:#1d7a46; --good-soft:#e2f3e8; --bad:#b3362c; --bad-soft:#fbe7e5;
+  --f-display:"Archivo",system-ui,sans-serif; --f-body:"IBM Plex Sans",system-ui,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0c1424; --surface:#131e33; --fg:#e6ecf7; --muted:#9aa8c2; --line:#26344f; --grid:rgba(120,160,230,.06);
+  --accent:#7aa7f0; --on-accent:#0c1424; --accent-soft:#1b2c4c; --good:#5cc98a; --good-soft:#12301f; --bad:#f08a80; --bad-soft:#3a1714; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1424; --surface:#131e33; --fg:#e6ecf7; --muted:#9aa8c2; --line:#26344f; --grid:rgba(120,160,230,.06);
+  --accent:#7aa7f0; --on-accent:#0c1424; --accent-soft:#1b2c4c; --good:#5cc98a; --good-soft:#12301f; --bad:#f08a80; --bad-soft:#3a1714; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:16px/1.6 var(--f-body);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+.wrap{max-width:760px;margin:0 auto;padding-block:32px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:28px}
+header{display:grid;gap:10px}
+.eyebrow{font:500 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font:800 clamp(28px,5vw,40px)/1.1 var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+.lede{margin:0;color:var(--muted);max-width:62ch}
+.specs{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 0;padding:0;list-style:none}
+.specs li{font:500 12.5px/1 var(--f-mono);border:1px solid var(--line);background:var(--surface);padding:7px 10px;border-radius:4px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;display:grid;gap:14px;min-width:0}
+h2{font:700 20px/1.25 var(--f-display);margin:0;text-wrap:balance}
+video{width:100%;max-width:100%;aspect-ratio:16/9;background:var(--fg);border-radius:6px;display:block}
+.meter{height:6px;background:var(--accent-soft);border-radius:3px;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:400 13px/1.4 var(--f-mono);color:var(--muted)}
+.locked{font-size:14px;color:var(--muted);margin:0}
+label.field{display:grid;gap:6px;font-weight:600;font-size:14px}
+input[type=text]{font:inherit;font-weight:400;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg);min-width:0}
+input[type=text]:focus-visible,button:focus-visible,.opt:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+#qs{display:grid;gap:18px;margin-top:18px}
+fieldset{border:0;margin:0;padding:18px 0 0;border-top:1px solid var(--line);display:grid;gap:10px;min-width:0}
+fieldset:first-child{border-top:0;padding-top:0}
+legend{font-weight:600;padding:0;margin-bottom:10px;display:flex;gap:10px;align-items:baseline;width:100%}
+legend .n{font:500 13px/1 var(--f-mono);color:var(--accent);min-width:2.2ch}
+legend .t{flex:1;min-width:0}
+legend .pts{font:400 12px/1 var(--f-mono);color:var(--muted);white-space:nowrap}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:6px;cursor:pointer;background:var(--bg)}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin-top:5px;accent-color:var(--accent)}
+.opt span{min-width:0}
+.opt.correct{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.fb{font-size:14px;margin:0;padding:10px 12px;border-radius:6px}
+.fb.ok{background:var(--good-soft);color:var(--good)}
+.fb.no{background:var(--bad-soft);color:var(--bad)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:22px}
+#result .actions{margin-top:0}
+button{font:600 15px/1 var(--f-body);padding:12px 18px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--on-accent);cursor:pointer}
+button.ghost{background:transparent;color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.err{color:var(--bad);font-size:14px;margin:0}
+.score{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.score b{font:800 52px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.score b small{font-size:22px;color:var(--muted)}
+.note{margin:0;font-size:14px;color:var(--muted)}
+pre.slip{font:400 13px/1.5 var(--f-mono);background:var(--bg);border:1px dashed var(--line);padding:12px;border-radius:6px;white-space:pre-wrap;margin:0;overflow-x:auto}
+@media (prefers-reduced-motion:reduce){.meter i{transition:none}}
+</style>
+
+</head><body>
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Digital media · Asset sourcing</span>
+    <h1>Building with Assets: Sourcing and Exporting</h1>
+    <p class="lede">Watch the whole video first. The quiz opens when the video has finished. There are 10 multiple-choice questions worth 1 mark each, and your answers are marked as soon as you submit.</p>
+    <ul class="specs" aria-label="Quiz details"><li>Video 4:52</li><li>10 questions</li><li>10 marks</li><li>Instant marking</li></ul>
+  </header>
+
+  <section class="panel" aria-labelledby="vh">
+    <h2 id="vh">Step 1 · Watch the video</h2>
+    <video id="vid" controls preload="metadata" playsinline src="video.mp4"></video>
+    <div class="meter" aria-hidden="true"><i id="bar"></i></div>
+    <div class="meta"><span id="watched">Watched 0%</span><span>Skipping ahead is blocked until you finish</span></div>
+  </section>
+
+  <section class="panel" aria-labelledby="qh">
+    <h2 id="qh">Step 2 · Answer the questions</h2>
+    <p class="locked" id="lockNote">The questions open once you have watched the whole video.</p>
+    <form id="quiz" hidden novalidate>
+      <label class="field" for="sname">Full name<input type="text" id="sname" autocomplete="name"></label>
+      <div id="qs"></div>
+      <div class="actions">
+        <button type="submit" id="submitBtn">Submit and see my score</button>
+        <p class="err" id="err" hidden></p>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel" id="result" hidden aria-live="polite">
+    <h2>Your result</h2>
+    <div class="score"><b id="scoreNum">0<small>/10</small></b><span id="scoreMsg"></span></div>
+    <p class="note">Copy this result and send it to your teacher if they ask for it.</p>
+    <pre class="slip" id="slip"></pre>
+    <div class="actions"><button type="button" id="copyBtn">Copy result</button><button type="button" class="ghost" id="retryBtn">Try again</button></div>
+  </section>
+</div>
+
+<script>
+const Q=[
+ ["What is the primary rule when sourcing an image asset?",["Always find an asset that is the exact size you need or larger","Download a smaller image and scale it up to save space","Any size works because software resizes images without loss","Choose the first image you find in the stock library"],0,"Scaling a large asset down keeps its quality. Enlarging a small one causes pixelation and distortion."],
+ ["A bitmap (raster) image is constructed from…",["Mathematical lines and curves","A grid of tiny individual pixels","Separate red, green and blue video layers","Compressed audio samples"],1,"Bitmaps are grids of pixels, which is why zooming in shows hard, blurry pixel edges."],
+ ["Why can vector graphics be scaled to any size without losing quality?",["They are saved at a very high resolution","They are always exported as JPGs","They are built from mathematical lines and curves instead of pixels","They contain no colour information"],2,"Vectors are built from maths, so their edges stay crisp at any size."],
+ ["Which asset should normally be created as a vector rather than a bitmap?",["A static photograph of a surfer","A full-screen background video","An interface icon that must scale across different screen sizes","A recorded sound effect"],2,"Use bitmaps for static photographs and vectors for illustrations and interface graphics."],
+ ["You have finished editing in a layered master project file (e.g. a PSD). What must you do before using it in the final interactive product?",["Import the layered master file directly into the product","Export a flattened final version in a suitable format","Delete the master file so it cannot be edited again","Rename the file extension to .png"],1,"Keep the editable master file, and export a flattened final version for the product."],
+ ["What happens if you export an interface icon with a transparent background as a JPG?",["The icon becomes a scalable vector","The empty space is filled with a solid colour block because JPG has no transparency","The file keeps its transparency but becomes larger","The icon gains an animated background"],1,"JPG has no alpha channel, so transparent areas become a solid block. Use PNG or SVG instead."],
+ ["In the adventure sports app example, which format is recommended for the button graphic?",["A JPG photograph","An MP4 clip","A transparent vector exported as SVG (or high-resolution PNG)","A WAV file"],2,"The button needs transparency and scalability, so it is exported as SVG or a high-resolution transparent PNG."],
+ ["A background video must fill the whole screen of the app. Which specification should you source?",["4:3 aspect ratio at 480p, exported as a GIF","16:9 aspect ratio at 1080p, exported as MP4","1:1 aspect ratio at 720p, exported as WAV","Any aspect ratio at 360p, exported as JPG"],1,"A full-screen background needs 16:9 at 1080p or more, exported as MP4. 480p only suits a small picture-in-picture window."],
+ ["What is the minimum frame rate you should look for so video clips play smoothly without stuttering?",["12 frames per second","15 frames per second","24 frames per second","5 frames per second"],2,"Source clips at a minimum of 24 frames per second."],
+ ["For an educational project, which licence filter should you use when searching for free media assets?",["Creative Commons licences","Rights-managed professional licences","Any image with a watermark","No filter – all online media is free to use"],0,"Professional libraries charge fees and add watermarks. Filter for Creative Commons and always verify the licence."]
+];
+const $=id=>document.getElementById(id);
+const qs=$('qs');
+Q.forEach((q,i)=>{
+  const fs=document.createElement('fieldset');fs.id='q'+i;
+  const lg=document.createElement('legend');
+  const n=document.createElement('span');n.className='n';n.textContent=String(i+1).padStart(2,'0');
+  const t=document.createElement('span');t.className='t';t.textContent=q[0];
+  const p=document.createElement('span');p.className='pts';p.textContent='1 mark';
+  lg.append(n,t,p);fs.appendChild(lg);
+  q[1].forEach((c,j)=>{
+    const l=document.createElement('label');l.className='opt';
+    const r=document.createElement('input');r.type='radio';r.name='q'+i;r.value=j;r.id='q'+i+'o'+j;
+    const s=document.createElement('span');s.textContent=c;
+    l.append(r,s);fs.appendChild(l);
+  });
+  qs.appendChild(fs);
+});
+
+// Watch gate: track the furthest point watched, block seeking past it, unlock at the end
+const v=$('vid');let maxT=0,unlocked=false;
+function unlock(){if(unlocked)return;unlocked=true;$('quiz').hidden=false;$('lockNote').textContent='Video watched. You can now answer the questions.';$('bar').style.width='100%';$('watched').textContent='Watched 100%';}
+v.addEventListener('timeupdate',()=>{
+  if(!v.seeking&&v.currentTime>maxT&&v.currentTime-maxT<2)maxT=v.currentTime;
+  const d=v.duration||1,pc=Math.min(100,Math.round(maxT/d*100));
+  if(!unlocked){$('bar').style.width=pc+'%';$('watched').textContent='Watched '+pc+'%';}
+  if(v.duration&&maxT>=d-1.5)unlock();
+});
+v.addEventListener('seeking',()=>{if(!unlocked&&v.currentTime>maxT+1)v.currentTime=maxT;});
+v.addEventListener('ended',unlock);
+
+$('quiz').addEventListener('submit',e=>{
+  e.preventDefault();
+  const name=$('sname').value.trim();
+  const missing=Q.map((_,i)=>document.querySelector('input[name=q'+i+']:checked')?null:i+1).filter(Boolean);
+  if(!name||missing.length){$('err').hidden=false;$('err').textContent=!name?'Enter your full name before submitting.':'Answer every question first. Missing: '+missing.join(', ')+'.';return;}
+  $('err').hidden=true;let score=0;const marks=[];
+  Q.forEach((q,i)=>{
+    const fs=$('q'+i),pick=+fs.querySelector('input:checked').value,ok=pick===q[2];if(ok)score++;
+    fs.querySelectorAll('.opt').forEach((l,j)=>{l.classList.toggle('correct',j===q[2]);l.classList.toggle('wrong',j===pick&&!ok);});
+    fs.querySelectorAll('input').forEach(r=>r.disabled=true);
+    const old=fs.querySelector('.fb');if(old)old.remove();
+    const fb=document.createElement('p');fb.className='fb '+(ok?'ok':'no');fb.textContent=(ok?'Correct. ':'Not quite. ')+q[3];fs.appendChild(fb);
+    marks.push('Q'+(i+1)+(ok?' ✓':' ✗'));
+  });
+  $('submitBtn').disabled=true;$('sname').disabled=true;
+  $('scoreNum').innerHTML=score+'<small>/10</small>';
+  $('scoreMsg').textContent=score>=8?'Excellent work.':score>=5?'Good effort. Review the questions marked in red.':'Rewatch the video and try again.';
+  $('slip').textContent='Building with Assets Quiz\nName: '+name+'\nScore: '+score+'/10 ('+score*10+'%)\nDate: '+new Date().toLocaleString()+'\n'+marks.join('  ');
+  $('result').hidden=false;$('result').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+});
+$('copyBtn').addEventListener('click',()=>{
+  navigator.clipboard.writeText($('slip').textContent).then(()=>{$('copyBtn').textContent='Copied';}).catch(()=>{const r=document.createRange();r.selectNodeContents($('slip'));const s=getSelection();s.removeAllRanges();s.addRange(r);$('copyBtn').textContent='Selected. Press Ctrl+C to copy';});
+});
+$('retryBtn').addEventListener('click',()=>{
+  document.querySelectorAll('#qs input').forEach(r=>{r.disabled=false;r.checked=false;});
+  document.querySelectorAll('.opt').forEach(l=>l.classList.remove('correct','wrong'));
+  document.querySelectorAll('.fb').forEach(f=>f.remove());
+  $('submitBtn').disabled=false;$('sname').disabled=false;$('result').hidden=true;$('copyBtn').textContent='Copy result';
+  $('q0').scrollIntoView();
+});
+</script>
+
+</body></html>
